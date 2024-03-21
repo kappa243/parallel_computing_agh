@@ -10,9 +10,10 @@ double randOneToOne(){
     return (double)rand() / RAND_MAX * 2.0 - 1.0;
 }
 
-const long N = 1e7 * 4;
 
 int main(int argc, char *argv[]) {
+    long N = atol(argv[1]);  
+
     clock_t start_time = clock();
 
     long sum = 0;

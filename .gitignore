@@ -1,3 +1,5 @@
 /agh-mpr-lab
 *.png
 *.out
+
+.vscode

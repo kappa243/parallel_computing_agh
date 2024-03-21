@@ -12,8 +12,8 @@ double randOneToOne(){
 
 
 int main(int argc, char *argv[]) {
-    long N = atol(argv[1]);  
-
+    long N = atol(argv[1]);   
+    
     int rank, size;
 
     MPI_Init(&argc, &argv);
@@ -26,9 +26,12 @@ int main(int argc, char *argv[]) {
     long K = N / size;
     if (rank == size - 1) K += N % size;
 
+    // double barrier start time to ensure all processes start calculation at the same time
     MPI_Barrier(MPI_COMM_WORLD);
 
     double start_time = MPI_Wtime();
+   
+    MPI_Barrier(MPI_COMM_WORLD);
 
     long sum = 0;
     for (long i = 0; i < K; i++){
