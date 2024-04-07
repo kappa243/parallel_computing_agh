@@ -24,7 +24,8 @@ Bucket Sort Algorithm.
   3.1) Each thread have its own part of array.
   3.2) Each thread sorts its part to its own buckets (number of buckets = number of threads). Parallelized. Calculated times.
   3.3) When all threads finished sorting to bucket, merge all buckets (one bucket is merged by one thread). Parallelized. Calculated times.
-  3.4) Each thread rewrites its own sorted bucket to the array. (Threads should inform each other what is size of each bucket
+  3.4) Sort buckets. Parallelized. Calculated times.
+  3.5) Each thread rewrites its own sorted bucket to the array. (Threads should inform each other what is size of each bucket
        to be able to rewrite it to the array in correct index position. It must be synchronized). Parallelized. Calculated times.
 4) Print time of each part.
 
@@ -81,6 +82,8 @@ int main(int argc, char *argv[]) {
     unsigned short xsubi[3];
 
 
+    double alg_start_time = omp_get_wtime();
+
     // --- fill array step ---
     double random_start_time = omp_get_wtime();
 
@@ -99,8 +102,8 @@ int main(int argc, char *argv[]) {
     double random_end_time = omp_get_wtime();
 
 
-    // --- sort into buckets step ---
-    double sort_start_time = omp_get_wtime();
+    // --- distribute into buckets step ---
+    double distrb_start_time = omp_get_wtime();
 
     #pragma omp parallel private(tid) shared(a, thread_buckets, size)
     {
@@ -118,8 +121,6 @@ int main(int argc, char *argv[]) {
 
     }
 
-    double sort_stop_time = omp_get_wtime();
-
     // // print buckets
     // for (int i = 0; i < num_threads; i++) {
     //     for (int j = 0; j < n_buckets; j++) {
@@ -135,7 +136,6 @@ int main(int argc, char *argv[]) {
 
 
     // --- merge buckets step ---
-    double merge_start_time = omp_get_wtime();
 
     #pragma omp parallel for shared(thread_buckets, concatenated_buckets)
     for (int bucket_id = 0; bucket_id < n_buckets; bucket_id++){
@@ -155,12 +155,21 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // sort array
-        std::sort(concatenated_buckets[bucket_id]->data.begin(), concatenated_buckets[bucket_id]->data.end());
     }
-    
 
-    double merge_stop_time = omp_get_wtime();
+    double distrb_stop_time = omp_get_wtime();
+
+    
+    double sort_start_time = omp_get_wtime();
+
+    // --- sort buckets step ---
+
+    #pragma omp parallel for shared(concatenated_buckets)
+    for (int bucket_id = 0; bucket_id < n_buckets; bucket_id++){
+            // sort array
+        std::sort(concatenated_buckets[bucket_id]->data.begin(), concatenated_buckets[bucket_id]->data.end());
+
+    }
 
     // // print concatenated buckets
     // for (int i = 0; i < n_buckets; i++) {
@@ -171,7 +180,11 @@ int main(int argc, char *argv[]) {
     //     printf("\n");
     // }
 
+    double sort_stop_time = omp_get_wtime();
+
     // --- rewrite buckets step ---
+
+    double rewrite_start_time = omp_get_wtime();
 
     // synchronized rewrite size calculation
     int rewrite_size = 0;
@@ -180,7 +193,6 @@ int main(int argc, char *argv[]) {
         concatenated_buckets[i]->size = rewrite_size;
     }
 
-    double rewrite_start_time = omp_get_wtime();
 
     #pragma omp parallel for shared(a, concatenated_buckets)
     for (int bucket_id = 0; bucket_id < n_buckets; bucket_id++){
@@ -201,6 +213,9 @@ int main(int argc, char *argv[]) {
     // for (int i = 0; i < size; i++) {
     //     printf("%d\n", a[i]);
     // }
+
+    double alg_stop_time = omp_get_wtime();
+
 
     // --- deallocate buckets ---
     for (int i = 0; i < num_threads; i++) {
@@ -225,8 +240,8 @@ int main(int argc, char *argv[]) {
 
     free(concatenated_buckets);
 
-    // --- print times --- (fill, sort, merge, rewrite)
-    printf("%f, %f, %f, %f\n", random_end_time - random_start_time, sort_stop_time - sort_start_time, merge_stop_time - merge_start_time, rewrite_start_time - rewrite_stop_time);
+    // --- print times --- (fill, distribute, sort, rewrite, all)
+    printf("%f, %f, %f, %f, %f\n", random_end_time - random_start_time, distrb_stop_time - distrb_start_time, sort_stop_time - sort_start_time, rewrite_stop_time - rewrite_start_time, alg_stop_time - alg_start_time);
 
     return 0;
 }
