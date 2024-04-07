@@ -201,6 +201,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    double rewrite_stop_time = omp_get_wtime();
+
     // // print array
     // for (int i = 0; i < size; i++) {
     //     printf("%d\n", a[i]);
@@ -233,7 +235,7 @@ int main(int argc, char *argv[]) {
     free(concatenated_buckets);
 
     // --- print times --- (fill, sort, merge, rewrite)
-    printf("%f, %f, %f, %f\n", random_end_time - random_start_time, sort_stop_time - sort_start_time, merge_stop_time - merge_start_time, rewrite_start_time - merge_stop_time);
+    printf("%f, %f, %f, %f\n", random_end_time - random_start_time, sort_stop_time - sort_start_time, merge_stop_time - merge_start_time, rewrite_start_time - rewrite_stop_time);
 
     return 0;
 }
