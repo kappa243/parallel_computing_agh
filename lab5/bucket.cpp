@@ -159,6 +159,9 @@ int main(int argc, char *argv[]) {
 
     double distrb_stop_time = omp_get_wtime();
 
+
+    
+   
     
     double sort_start_time = omp_get_wtime();
 
@@ -166,7 +169,7 @@ int main(int argc, char *argv[]) {
 
     #pragma omp parallel for shared(concatenated_buckets)
     for (int bucket_id = 0; bucket_id < n_buckets; bucket_id++){
-            // sort array
+        // sort array
         std::sort(concatenated_buckets[bucket_id]->data.begin(), concatenated_buckets[bucket_id]->data.end());
 
     }
@@ -241,7 +244,7 @@ int main(int argc, char *argv[]) {
     free(concatenated_buckets);
 
     // --- print times --- (fill, distribute, sort, rewrite, all)
-    printf("%f, %f, %f, %f, %f\n", random_end_time - random_start_time, distrb_stop_time - distrb_start_time, sort_stop_time - sort_start_time, rewrite_stop_time - rewrite_start_time, alg_stop_time - alg_start_time);
+    printf("%f,%f,%f,%f,%f", random_end_time - random_start_time, distrb_stop_time - distrb_start_time, sort_stop_time - sort_start_time, rewrite_stop_time - rewrite_start_time, alg_stop_time - alg_start_time);
 
     return 0;
 }
