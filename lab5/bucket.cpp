@@ -16,7 +16,7 @@ int compare(const void *a, const void *b) {
 
 /*
 
-Bucket Sort Algorithm.
+Bucket Sort Algorithm 3.
 
 1) Read first parameter from command line as the size of the array.
 2) Fill array with random numbers from 0 to MAX_INT. Parallelized. Calculated times.
@@ -25,8 +25,8 @@ Bucket Sort Algorithm.
   3.2) Each thread sorts its part to its own buckets (number of buckets = number of threads). Parallelized. Calculated times.
   3.3) When all threads finished sorting to bucket, merge all buckets (one bucket is merged by one thread). Parallelized. Calculated times.
   3.4) Sort buckets. Parallelized. Calculated times.
-  3.5) Each thread rewrites its own sorted bucket to the array. (Threads should inform each other what is size of each bucket
-       to be able to rewrite it to the array in correct index position. It must be synchronized). Parallelized. Calculated times.
+  3.5) Synchronized calculation of write index.
+  3.6) Each thread rewrites its own sorted bucket to the array. Parallelized. Calculated times.
 4) Print time of each part.
 
 */
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
         
         for (int i = tid * base_job_size; i < tid * base_job_size + job_size; i++) {
             int bucket_id = MIN((a[i] / (INT_MAX / n_buckets)), n_buckets - 1); // min to put numbers meeting (INT_MAX % num_threads) to the last bucket
-            thread_buckets[tid][bucket_id]->data.push_back(a[i]); // put into 'size' index and increment size
+            thread_buckets[tid][bucket_id]->data.push_back(a[i]); // put into bucket
         }
 
     }
@@ -145,7 +145,6 @@ int main(int argc, char *argv[]) {
             conc_size += thread_buckets[thread_id][bucket_id]->data.size();
         }
 
-        // allocate memory for conc array
         concatenated_buckets[bucket_id]->size = conc_size;
         
         // concatenate buckets
